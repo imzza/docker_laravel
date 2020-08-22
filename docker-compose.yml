@@ -1,0 +1,49 @@
+version: '3.7'
+networks:
+  laravel:
+
+services:
+  nginx:
+    image: nginx:stable-alpine
+    container_name: laradocwebserver
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www/html
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - laravel
+    depends_on:
+      - php
+      - mysql
+  mysql:
+    image: mysql:5.7.22
+    container_name: laradocmysql
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "4306:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: laradoc
+      MYSQL_USER: laradoc
+      MYSQL_PASSWORD: laradoc
+      MYSQL_ROOT_PASSWORD: laradoc
+      MYSQL_TAGS: dev
+      SERVICE_NAME: mysql
+
+    networks:
+      - laravel
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: laradocphp
+    volumes:
+      - ./src:/var/www/html
+    ports:
+      - "9000:9000"
+    networks:
+      - laravel
+
